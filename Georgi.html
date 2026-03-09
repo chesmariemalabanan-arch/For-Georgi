@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Georgi</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(#F8C8DC, #FFB6C1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+  }
+  #game-container, #confession-container, #message-container {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #shuttlecock {
+    width: 70px;
+    height: 70px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    cursor: pointer;
+    box-shadow: 0 0 8px #aaa;
+    touch-action: none; /* ensures smooth touch behavior */
+  }
+  button {
+    padding: 15px 25px;
+    font-size: 20px;
+    margin: 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+  }
+  #yes { background-color: #4CAF50; color: pink; }
+  #no { background-color: #f44336; color: pink; }
+  #scoreboard {
+    font-size: 22px;
+    font-weight: bold;
+  }
+  #message-container {
+    display: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <h2>🏸 Hit the ball 5 times!</h2>
+  <div id="scoreboard">Hits: 0/5</div>
+  <div id="shuttlecock"></div>
+</div>
+
+<div id="confession-container" style="display:none;">
+  <h2>Will you go to prom with me? 💌</h2>
+  <button id="yes">Yes</button>
+  <button id="no">No</button>
+</div>
+
+<div id="message-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+emailjs.init('PWn4XNlaDLnlOri96'); // Your EmailJS user ID
+
+const shuttle = document.getElementById('shuttlecock');
+const gameContainer = document.getElementById('game-container');
+const confessionContainer = document.getElementById('confession-container');
+const scoreboard = document.getElementById('scoreboard');
+const messageContainer = document.getElementById('message-container');
+
+let hits = 0;
+let x = Math.random() * (window.innerWidth - 70);
+let y = Math.random() * (window.innerHeight - 70);
+let dx = 1.2; // slower for mobile
+let dy = 1.2;
+
+shuttle.style.left = x + 'px';
+shuttle.style.top = y + 'px';
+
+// Smooth movement
+function moveShuttle() {
+  x += dx;
+  y += dy;
+
+  if(x < 0 || x > window.innerWidth - 70) dx = -dx;
+  if(y < 0 || y > window.innerHeight - 70) dy = -dy;
+
+  shuttle.style.left = x + 'px';
+  shuttle.style.top = y + 'px';
+
+  requestAnimationFrame(moveShuttle);
+}
+moveShuttle();
+
+// Click or touch the ball
+function hitBall() {
+  hits++;
+  scoreboard.textContent = `Hits: ${hits}/5`;
+
+  if(hits >= 5){
+    gameContainer.style.display = 'none';
+    confessionContainer.style.display = 'block';
+  }
+}
+shuttle.addEventListener('click', hitBall);
+shuttle.addEventListener('touchstart', hitBall);
+
+// Send email
+function sendEmail(answer){
+  emailjs.send('service_f5njbfr', 'template_vn4xlwc', {
+    user_answer: answer,
+    timestamp: new Date().toLocaleString(),
+    subject: "Prom Answer: " + answer
+  })
+  .then(function(response) {
+     console.log("SUCCESS!", response.status, response.text);
+  }, function(error) {
+     console.log("FAILED...", error);
+  });
+}
+
+// Yes/No button actions
+document.getElementById('yes').addEventListener('click', () => {
+  sendEmail('Yes');
+  confessionContainer.style.display = 'none';
+  messageContainer.textContent = "THANK YOU, SEE YOU AT PROM 🎉";
+  messageContainer.style.display = 'block';
+});
+
+document.getElementById('no').addEventListener('click', () => {
+  sendEmail('No');
+  confessionContainer.style.display = 'none';
+  messageContainer.textContent = "It's okay, let's just be friends! I wanna get to know you better :)))";
+  messageContainer.style.display = 'block';
+});
+</script>
+
+</body>
+</html>
